@@ -1,5 +1,5 @@
 import os
-from langchain_community.document_loaders import PyMuPDFLoader
+from langchain_community.document_loaders import PyPDFLoader
 from app.config import PDF_DIR
 
 
@@ -16,7 +16,7 @@ def load_pdfs():
 
     for file_name in pdf_files:
         file_path = os.path.join(PDF_DIR, file_name)
-        loader = PyMuPDFLoader(file_path)
+        loader = PyPDFLoader(file_path)
         file_docs = loader.load()
 
         for doc in file_docs:

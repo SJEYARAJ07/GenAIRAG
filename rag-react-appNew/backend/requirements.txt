@@ -1,9 +1,11 @@
+# requirements.txt
 fastapi
 uvicorn
-langchain
+langchain==0.3.30
 langchain-community
-langchain-ollama
 langchain-chroma
 chromadb
-pymupdf
+langchain-core
+langchain-text-splitters
+pypdf
 python-dotenv

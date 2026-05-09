@@ -13,7 +13,8 @@ def run():
     print(f"Created {len(chunks)} chunks.")
 
     print("Creating vector database...")
-    create_db(chunks)
+    db = create_db(chunks)
+    print("DB count after ingestion:", db._collection.count())
     print("Ingestion complete.")
 
 
