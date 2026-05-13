@@ -1,34 +1,35 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { askQuestion } from "../api/ragApi";
 
 export default function ChatBox() {
   const [query, setQuery] = useState("");
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+    { role: "bot", text: "Hi" },
+  ]);
   const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
 
   const handleSend = async () => {
-    const trimmedQuery = query.trim();
-    if (!trimmedQuery || loading) return;
+    const trimmed = query.trim();
+    if (!trimmed || loading) return;
 
-    const userMsg = { role: "user", text: trimmedQuery };
-    setMessages(prev => [...prev, userMsg]);
-
+    setMessages((prev) => [...prev, { role: "user", text: trimmed }]);
     setQuery("");
     setLoading(true);
 
     try {
-      const res = await askQuestion(trimmedQuery);
+      const res = await askQuestion(trimmed);
+      const botText = res?.answer || res?.result || "No answer returned.";
 
-      const botMsg = {
-        role: "bot",
-        text: res?.answer || "No answer returned.",
-      };
-
-      setMessages(prev => [...prev, botMsg]);
+      setMessages((prev) => [...prev, { role: "bot", text: botText }]);
     } catch (err) {
-      setMessages(prev => [
+      setMessages((prev) => [
         ...prev,
-        { role: "bot", text: "Error: Unable to fetch response." }
+        { role: "bot", text: "Error getting response" },
       ]);
     } finally {
       setLoading(false);
@@ -36,30 +37,37 @@ export default function ChatBox() {
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>RAG Chat</h2>
+    <div className="app-bg">
+      <div className="chat-container">
+        <h1 className="title">POC Portfolio Delivery Intelligence</h1>
+        <p className="subtitle">
+          Ask a question based on the loaded context.
+        </p>
 
-      <div style={{ marginBottom: 20 }}>
-        {messages.map((m, i) => (
-          <p key={i}>
-            <b>{m.role}:</b> {m.text}
-          </p>
-        ))}
+        <div className="chat-area">
+          {messages.map((m, i) => (
+            <div key={i} className={`msg ${m.role}`}>
+              {m.text}
+            </div>
+          ))}
+
+          {loading && <div className="msg bot thinking">Thinking...</div>}
+
+          <div ref={messagesEndRef} />
+        </div>
+
+        <div className="input-row">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Ask your question..."
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+          />
+          <button onClick={handleSend} disabled={loading}>
+            Ask
+          </button>
+        </div>
       </div>
-
-      <input
-        value={query}
-        onChange={e => setQuery(e.target.value)}
-        onKeyDown={e => {
-          if (e.key === "Enter") handleSend();
-        }}
-        placeholder="Ask a question..."
-        style={{ marginRight: 10 }}
-      />
-
-      <button onClick={handleSend} disabled={loading}>
-        {loading ? "Sending..." : "Send"}
-      </button>
     </div>
   );
 }
